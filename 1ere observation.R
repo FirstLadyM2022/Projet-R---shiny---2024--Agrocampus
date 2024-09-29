@@ -17,7 +17,7 @@ library(leaflet)
 
 
 ########### chargement de la data:
-quali_nitrate <- read.csv("/Users/massambadiop/INSTITUT AGRO/M2 Sciences des données/Analyse de données massives sur R/Projet Shiny/Projet-R---shiny---2024--Agrocampus-main/qualite-des-cours-deau-vis-a-vis-des-nitrates-en-bretagne.csv",stringsAsFactors  = T)
+data <- read.csv("/Users/massambadiop/Documents/INSTITUT AGRO/M2 Sciences des données/Analyse de données massives sur R/Projet-R---shiny---2024--Agrocampus-1/qualite-des-cours-deau-vis-a-vis-des-nitrates-en-bretagne.csv",stringsAsFactors  = T,header =T)
 quali_nitrate$code_region <- factor(quali_nitrate$code_region)
 quali_nitrate$code_departement <- factor(quali_nitrate$code_departement)
 #observation de la data
