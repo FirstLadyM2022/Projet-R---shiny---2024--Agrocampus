@@ -8,7 +8,7 @@ quali_nitrate <- read.csv("qualite-des-cours-deau-vis-a-vis-des-nitrates-en-bret
 # Identifier les régions, départements et années
 regions <- unique(quali_nitrate$libelle_region)
 departements <- split(quali_nitrate$libelle_departement, quali_nitrate$libelle_region)
-annees <- unique(quali_nitrate$annee)
+annees <- sort(unique(quali_nitrate$annee))  # Trier les années pour le curseur
 
 # Définir l'interface utilisateur
 ui <- fluidPage(
@@ -21,11 +21,17 @@ ui <- fluidPage(
                      selected = "Bretagne", 
                      options = list(maxItems = 1)),  # Sélection par défaut
       uiOutput("departementUI"),  # UI pour le choix des départements
-      selectizeInput("annee", "Sélectionnez une Année :", 
-                     choices = annees, 
-                     selected = NULL, 
-                     options = list(maxItems = 1, 
-                                    placeholder = "Choisissez une année..."))  # Ajout d'un placeholder
+      sliderInput("annee", "Sélectionnez une Année :", 
+                  min = min(annees), 
+                  max = max(annees), 
+                  value = max(annees),  # Valeur par défaut : année maximale
+                  step = 1,
+                  ticks = FALSE),  # Ne pas afficher les ticks
+      radioButtons("metrique", "Choisissez la Métrique :", 
+                   choices = c("Concentration Moyenne" = "concentration_moy", 
+                               "Q90" = "valeur_q90"),  # Options disponibles avec la bonne variable
+                   selected = "concentration_moy", 
+                   inline = TRUE)  # Afficher les boutons radio en ligne
     ),
     
     mainPanel(
@@ -63,31 +69,50 @@ server <- function(input, output, session) {
     data <- subset(quali_nitrate, libelle_departement == input$departement & annee == input$annee)
     
     leafletProxy("map") %>%
-      clearMarkers()  # Effacer les anciens marqueurs
+      clearMarkers() %>%  # Effacer les anciens marqueurs
+      clearControls()  # Effacer la légende précédente
 
     # Vérifier si des données sont disponibles
     if (nrow(data) > 0) {
+      # Créer une palette de couleurs basée sur la métrique choisie
+      pal <- colorNumeric(palette = "YlOrRd", domain = data[[input$metrique]])
+      
       leafletProxy("map") %>%  # Utiliser leafletProxy pour ajouter des marqueurs
         addCircleMarkers(
           data = data,  # Utiliser les données filtrées
           lng = ~longitude, 
           lat = ~latitude, 
-          color = "blue", 
+          color = pal(data[[input$metrique]]),  # Appliquer la couleur selon la métrique choisie
           fillOpacity = 0.7, 
           radius = 10,
           label = paste(
             "Station:", data$libelle_station, "\n",
             "Concentration Moyenne:", data$concentration_moy, "mg/L", "\n",
+            "Q90:", data$valeur_q90, "mg/L", "\n",  # Utiliser valeur_q90 pour le label
             "Nombre de Prélèvements:", data$nombre_prelevements
           ),
           labelOptions = labelOptions(
             noHide = FALSE,  # Afficher le label uniquement au survol
             direction = 'top', 
             offset = c(0, -10), 
-            textOnly = TRUE,
-            style = list("color" = "black", "background-color" = "white", "border" = "solid 1px")
+            textOnly = TRUE,  # Utilisation de texte brut
+            style = list("color" = "black", "background-color" = "white", "border" = "solid 1px")  # Style des labels
+          ),
+          popup = paste(
+            "Station:", data$libelle_station, "<br>",
+            "Concentration Moyenne:", data$concentration_moy, "mg/L", "<br>",
+            "Q90:", data$valeur_q90, "mg/L", "<br>",
+            "Nombre de Prélèvements:", data$nombre_prelevements
           )
         )
+      
+      # Ajouter une légende pour la palette de couleurs
+      leafletProxy("map") %>%
+        addLegend("bottomright", 
+                  pal = pal, 
+                  values = data[[input$metrique]],  # Utiliser la métrique choisie pour la légende
+                  title = input$metrique,  # Titre dynamique basé sur la métrique choisie
+                  opacity = 0.7)
     } else {
       leafletProxy("map") %>%
         clearMarkers() %>%
