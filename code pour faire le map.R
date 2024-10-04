@@ -75,18 +75,13 @@ server <- function(input, output, session) {
           color = "blue", 
           fillOpacity = 0.7, 
           radius = 10,
-          label = HTML(paste(
-            "<div style='font-size: 12px;'>",  # Style optionnel pour le texte
-            "<strong>Station:</strong> ", data$libelle_station, "<br>",
-            "<strong>Cours d'eau:</strong> ", data$nom_cours_eau, "<br>",
-            "<strong>Latitude:</strong> ", data$latitude, "<br>",  # Ajout de la latitude
-            "<strong>Longitude:</strong> ", data$longitude, "<br>",  # Ajout de la longitude
-            "<strong>Concentration Moyenne:</strong> ", data$concentration_moy, "<br>",
-            "<strong>Nombre de Prélèvements:</strong> ", data$nombre_prelevements,
-            "</div>"
-          )),
+          label = paste(
+            "Station:", data$libelle_station, "\n",
+            "Concentration Moyenne:", data$concentration_moy, "mg/L", "\n",
+            "Nombre de Prélèvements:", data$nombre_prelevements
+          ),
           labelOptions = labelOptions(
-            noHide = FALSE, 
+            noHide = FALSE,  # Afficher le label uniquement au survol
             direction = 'top', 
             offset = c(0, -10), 
             textOnly = TRUE,
