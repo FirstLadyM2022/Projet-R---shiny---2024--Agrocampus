@@ -5,7 +5,18 @@ library(shiny)
 library(leaflet)
 
 
-# Dataset
+# Charger les bibliothèques nécessaires
+library(shiny)
+library(leaflet)
+
+# Charger le dataset
+data <- read.csv("qualite-des-cours-deau-vis-a-vis-des-nitrates-en-bretagne.csv", stringsAsFactors = TRUE)
+
+# Identifier les régions, départements et années
+regions <- unique(data$libelle_region)
+departements <- split(data$libelle_departement, data$libelle_region)
+annees <- sort(unique(data$annee))  # Trier les années pour le curseur
+
 
 
 
@@ -29,7 +40,7 @@ ui <- fluidPage(
                         mainPanel(
                           plotlyOutput("plot1"),
                           hr(),  # A horizontal line for separation
-                          plotOutput("nitratePlot_dep")  # Adding the plot from Page 4 here
+                          plotlyOutput("nitratePlot_dep")  # Adding the plot from Page 4 here
                         )
                       )
              ),
@@ -39,7 +50,7 @@ ui <- fluidPage(
                           sidebarLayout(
                             sidebarPanel(
                               selectInput("department", 
-                                          "Select Department:", 
+                                          "Select Departement:", 
                                           choices = unique(nitrate_trend_dept$libelle_departement), 
                                           selected = unique(nitrate_trend_dept$libelle_departement)[1])
                             ),
@@ -64,10 +75,8 @@ server <- function(input, output, session) {
   
   # Update choices for column selection in all pages
   observe({
-    updateSelectInput(session, "column1", choices = colnames(data[,21:24]))
-    updateSelectInput(session, "column2", choices = colnames(data[,21:24]))
-    updateSelectInput(session, "column3", choices = colnames(data[,21:24]))
-    updateSelectInput(session, "column4", choices = colnames(data[,21:24]))
+    updateSelectInput(session, "column1", choices = colnames(data[,20:22]))
+
   })
   
   
@@ -78,6 +87,26 @@ server <- function(input, output, session) {
     plot <- autoplot(data.ts[, input$column1], xlab = "Année", ylab = input$column1, main = paste("Evolution", input$column1))
     ggplotly(plot)
   })
+  # Render Plot for Page 1
+  output$nitratePlot_dep <- renderPlotly({
+    ggplotly(ggplot(nitrate_trend_dept, aes(x = annee, y = mean_concentration, color = libelle_departement)) +
+      geom_line() + 
+      geom_point(size=0.7) +
+      labs(title = "Evolution de la Concentration moyenne en nitrates par Department",
+           x = "Année",
+           y = "Concentration moyenne en nitrates (mg/L)",
+           color = "Departements") +
+      theme_minimal() +
+      theme(legend.position = "right") +
+      theme(
+        plot.title = element_text(size = 16),  # Title size
+        axis.title.x = element_text(size = 14),  # X-axis title size
+        axis.title.y = element_text(size = 14),  # Y-axis title size
+        legend.text = element_text(size = 12)  # Legend text size
+      )
+    )
+  })
+  
   
   # Render Plot for Page 3
   output$nitratePlot <- renderPlot({
@@ -95,25 +124,7 @@ server <- function(input, output, session) {
       theme_gray()
   })
   
-  # Render Plot for Page 4
-  output$nitratePlot_dep <- renderPlot({
-    ggplot(nitrate_trend_dept, aes(x = annee, y = mean_concentration, color = libelle_departement)) +
-               geom_line() + 
-               geom_point(size=0.7) +
-               labs(title = "Evolution de la Concentration moyenne en nitrates par Department",
-                    x = "Année",
-                    y = "Concentration moyenne en nitrates (mg/L)",
-                    color = "Departements") +
-               theme_minimal() +
-               theme(legend.position = "right") +
-      theme(
-        plot.title = element_text(size = 16),  # Title size
-        axis.title.x = element_text(size = 14),  # X-axis title size
-        axis.title.y = element_text(size = 14),  # Y-axis title size
-        legend.text = element_text(size = 12)  # Legend text size
-      )
-    
-  })
+  
 
 }
 # Run the Shiny app
