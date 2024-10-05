@@ -33,7 +33,7 @@ annees <- sort(unique(data$annee))  # Trier les années
 
 # Définir l'interface utilisateur (UI)
 ui <- fluidPage(theme = shinytheme("cerulean"),
-  titlePanel("ShinyTrate Project"), 
+  titlePanel(h1("ShinyTrate Project")), 
   navbarPage("Application Interactive des Séries Temporelles",
              
              # Page 1 - Évolution de la concentration en nitrates
@@ -107,7 +107,7 @@ server <- function(input, output, session) {
   # Graphe 1
   output$plot1 <- renderPlotly({
     req(input$column1)
-    plot <- autoplot(data.ts[, input$column1],type= 'b', xlab = "Année", ylab = input$column1,colour='red', main = paste("Evolution globale de la", input$column1,"en nitrate" ))
+    plot <- autoplot(data.ts[, input$column1],type= 'b', xlab = "Année", ylab = input$column1,colour='dodgerblue', main = paste("Evolution globale de la", input$column1,"en nitrate" ))
     ggplotly(plot)
   })
   
@@ -143,12 +143,12 @@ server <- function(input, output, session) {
       filter(libelle_departement == input$department)
     
     ggplot(dept_data, aes(x = annee, y = mean_concentration)) +
-               geom_line(color = "blue", size=2) +
-               geom_point(color = "red", size=2) +
+               geom_line(color = 'royalblue4', size=2) +
+               geom_point(color = "blue", size=2) +
                labs(title = paste("Evolution de la Concentration en nitrate en", input$department),
                     x = "Year",
                     y = "Average Nitrate Concentration (mg/L)") +
-               theme_gray()
+               theme_linedraw()
   })
   
   # UI dynamique pour le choix des départements
