@@ -3,7 +3,7 @@
 # install.packages("leaflet")
 # install.packages("ggfortify")
 # install.packages("bslib")
-install.packages("shinythemes")
+#install.packages("shinythemes")
 
 # Charger les bibliothèques nécessaires
 library(shiny)
@@ -14,7 +14,7 @@ library(ggfortify)  # Pour autoplot (séries temporelles)
 library(plotly)     # Pour ggplotly (graphique interactif)
 
 # Charger les données
-data_path <- "/Users/massambadiop/Documents/INSTITUT AGRO/M2 Sciences des données/Analyse de données massives sur R/Projet-R---shiny---2024--Agrocampus-1/qualite-des-cours-deau-vis-a-vis-des-nitrates-en-bretagne.csv"
+data_path <- "qualite-des-cours-deau-vis-a-vis-des-nitrates-en-bretagne.csv"
 
 if (file.exists(data_path)) {
   data <- read.csv(data_path, stringsAsFactors = TRUE)
