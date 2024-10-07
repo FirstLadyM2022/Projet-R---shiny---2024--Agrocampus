@@ -31,6 +31,15 @@ regions <- unique(data$libelle_region)
 departements <- split(data$libelle_departement, data$libelle_region)
 annees <- sort(unique(data$annee))  # Trier les années
 
+
+data_gr <- data %>% 
+  select(annee, libelle_departement, concentration_moy) %>% 
+  filter(!is.na(concentration_moy))
+
+# Group data by year and department to calculate the average nitrate concentration
+nitrate_trend_dept <- data_gr %>% 
+  group_by(annee, libelle_departement) %>% 
+  summarise(mean_concentration = mean(concentration_moy))
 # Définir l'interface utilisateur (UI)
 ui <- fluidPage(theme = shinytheme("cerulean"),
   titlePanel(h1("ShinyTrate Project")), 
