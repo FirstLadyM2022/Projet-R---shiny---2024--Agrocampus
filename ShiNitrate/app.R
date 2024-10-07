@@ -3,7 +3,7 @@
 # install.packages("leaflet")
 # install.packages("ggfortify")
 # install.packages("bslib")
-#install.packages("shinythemes")
+#install.packages("shinythemes") 
 
 # Charger les bibliothèques nécessaires
 library(shiny)
