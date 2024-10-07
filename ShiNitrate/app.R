@@ -49,12 +49,16 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
              tabPanel("Evolutif de la concentration en nitrates",
                       sidebarLayout(
                         sidebarPanel(
-                          selectInput("column1", "Select Column for Page 1:", choices = NULL)
+                         
+                          selectInput("region", "Sélectionnez une région", 
+                                      choices = c("Bretagne", "Normandie", "Pays de la Loire"),
+                                      selected = "Bretagne")
                         ),
                         mainPanel(
-                          plotlyOutput("plot1"),  # Graphe 1
+                          plotOutput("nitratePlot3"),  # Graphe 1
                           hr(),  # Ligne horizontale
-                          plotlyOutput("nitratePlot_dep"),  # Graphe 2
+                          plotlyOutput("nitratePlot_dep") # Graphe 2
+                          
 
                         )
                       )
@@ -114,16 +118,61 @@ server <- function(input, output, session) {
   
   ### Render Plot for Page 1
   # Graphe 1
-  output$plot1 <- renderPlotly({
-    req(input$column1)
-    plot <- autoplot(data.ts[, input$column1],type= 'b', xlab = "Année", ylab = input$column1,colour='dodgerblue', main = paste("Evolution globale de la", input$column1,"en nitrate" ))
-    ggplotly(plot)
+  dataMir <- reactive({
+    
+    
+    # Vérification des colonnes et renommer si nécessaire
+    df <- data %>%
+      rename(
+        annee = annee, 
+        libelle_region = libelle_region,  # Utiliser le nom de la colonne correcte
+        concentration_moy = concentration_moy,
+        concentration_min = concentration_min, 
+        concentration_max = concentration_max
+      )
+    
+    # Filtrer les données selon la région sélectionnée
+    df_filtered <- df %>%
+      filter(libelle_region == input$region) %>%
+      group_by(annee) %>%
+      summarise(
+        concentration_moyenne = mean(concentration_moy, na.rm = TRUE),
+        concentration_minimale = mean(concentration_min, na.rm = TRUE),
+        concentration_maximale = mean(concentration_max, na.rm = TRUE)
+      )
+    
+    return(df_filtered)
+  })
+  
+  # Créer le graphique
+  output$nitratePlot3 <- renderPlot({
+    req(dataMir())
+    ggplot(dataMir(), aes(x = annee), cex=2) +
+      geom_line(aes(y = concentration_moyenne, color = "Concentration Moyenne")) +
+      geom_line(aes(y = concentration_minimale, color = "Concentration Minimale")) +
+      geom_line(aes(y = concentration_maximale, color = "Concentration Maximale")) +
+      geom_point(aes(y = concentration_moyenne, color = "Concentration Moyenne"), size = 1) +
+      geom_point(aes(y = concentration_minimale, color = "Concentration Minimale"), size = 1) +
+      geom_point(aes(y = concentration_maximale, color = "Concentration Maximale"), size = 1) +
+      labs(
+        title = paste("Évolution des Concentrations de Nitrates en", input$region),
+        x = "Année",
+        y = "Concentration de Nitrates (mg/L)",
+      ) +
+      scale_color_manual(
+        values = c("Concentration Moyenne" = "blue", 
+                   "Concentration Minimale" = "green", 
+                   "Concentration Maximale" = "red"),
+        name = "Type de Concentration"
+      ) +
+      theme_gray()
+    
   })
   
   # Graphe 2
   output$nitratePlot_dep <- renderPlotly({
     # S'assurer que nitrate_trend_dept est défini
-    req(input$column1)
+
     
     ggplotly(ggplot(nitrate_trend_dept, aes(x = annee, y = mean_concentration, color = libelle_departement)) +
                geom_line(size=0.9) + 
@@ -158,6 +207,53 @@ server <- function(input, output, session) {
                     x = "Year",
                     y = "Average Nitrate Concentration (mg/L)") +
                theme_linedraw()
+  })
+  
+  dataMir <- reactive({
+ 
+    
+    # Vérification des colonnes et renommer si nécessaire
+    df <- data %>%
+      rename(
+        annee = annee, 
+        libelle_region = libelle_region,  # Utiliser le nom de la colonne correcte
+        concentration_moy = concentration_moy,
+        concentration_min = concentration_min, 
+        concentration_max = concentration_max
+      )
+    
+    # Filtrer les données selon la région sélectionnée
+    df_filtered <- df %>%
+      filter(libelle_region == input$region) %>%
+      group_by(annee) %>%
+      summarise(
+        concentration_moyenne = mean(concentration_moy, na.rm = TRUE),
+        concentration_minimale = mean(concentration_min, na.rm = TRUE),
+        concentration_maximale = mean(concentration_max, na.rm = TRUE)
+      )
+    
+    return(df_filtered)
+  })
+  
+  # Créer le graphique
+  output$nitratePlot3 <- renderPlot({
+    req(dataMir())
+    ggplot(dataMir(), aes(x = annee)) +
+      geom_line(aes(y = concentration_moyenne, color = "Concentration Moyenne")) +
+      geom_line(aes(y = concentration_minimale, color = "Concentration Minimale")) +
+      geom_line(aes(y = concentration_maximale, color = "Concentration Maximale")) +
+      labs(
+        title = paste("Évolution des Concentrations de Nitrates en", input$region),
+        x = "Année",
+        y = "Concentration de Nitrates (mg/L)"
+      ) +
+      scale_color_manual(
+        values = c("Concentration Moyenne" = "blue", 
+                   "Concentration Minimale" = "green", 
+                   "Concentration Maximale" = "red"),
+        name = "Type de Concentration"
+      ) +
+      theme_minimal()
   })
   
   # UI dynamique pour le choix des départements
