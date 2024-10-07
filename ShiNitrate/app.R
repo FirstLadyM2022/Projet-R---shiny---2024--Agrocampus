@@ -63,6 +63,7 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                         )
                       )
              ),
+             # Page 2: Evolution de la concentration en nitrates par Département
              tabPanel("Evolution de la concentration en nitrates par Département",
                       sidebarLayout(
                         sidebarPanel(
@@ -208,7 +209,7 @@ server <- function(input, output, session) {
                     y = "Average Nitrate Concentration (mg/L)") +
                theme_linedraw()
   })
-  
+  # Graphe n°1  page 1: Évolution des Concentrations de Nitrates
   dataMir <- reactive({
  
     
