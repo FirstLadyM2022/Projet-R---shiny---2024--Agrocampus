@@ -3,7 +3,7 @@
 # install.packages("leaflet")
 # install.packages("ggfortify")
 # install.packages("bslib")
-#install.packages("shinythemes") 
+#install.packages("shinythemes")
 
 # Charger les bibliothèques nécessaires
 library(shiny)
@@ -55,7 +55,7 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                                       selected = "Bretagne")
                         ),
                         mainPanel(
-                          plotOutput("nitratePlot3"),  # Graphe 1
+                          plotlyOutput("nitratePlot3"),  # Graphe 1
                           hr(),  # Ligne horizontale
                           plotlyOutput("nitratePlot_dep") # Graphe 2
                           
@@ -63,7 +63,6 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                         )
                       )
              ),
-             # Page 2: Evolution de la concentration en nitrates par Département
              tabPanel("Evolution de la concentration en nitrates par Département",
                       sidebarLayout(
                         sidebarPanel(
@@ -74,7 +73,7 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                         ),
                         
                         mainPanel(
-                          plotOutput("nitratePlot")
+                          plotlyOutput("nitratePlot")
                         )
                       )
              ),
@@ -106,6 +105,7 @@ ui <- fluidPage(theme = shinytheme("cerulean"),
                       )
              )
   )
+  
 )
 
 # Définir la logique serveur
@@ -146,9 +146,9 @@ server <- function(input, output, session) {
   })
   
   # Créer le graphique
-  output$nitratePlot3 <- renderPlot({
+  output$nitratePlot3 <- renderPlotly({
     req(dataMir())
-    ggplot(dataMir(), aes(x = annee), cex=2) +
+   plotT <-  ggplot(dataMir(), aes(x = annee), cex=2) +
       geom_line(aes(y = concentration_moyenne, color = "Concentration Moyenne")) +
       geom_line(aes(y = concentration_minimale, color = "Concentration Minimale")) +
       geom_line(aes(y = concentration_maximale, color = "Concentration Maximale")) +
@@ -167,7 +167,7 @@ server <- function(input, output, session) {
         name = "Type de Concentration"
       ) +
       theme_gray()
-    
+    ggplotly(plotT)
   })
   
   # Graphe 2
@@ -195,21 +195,25 @@ server <- function(input, output, session) {
     updateSelectInput(session, "column1", choices = colnames(data[,20:22]))
   })
   # Graphe 3
-  output$nitratePlot <- renderPlot({
+  output$nitratePlot <- renderPlotly({
     req(input$department, nitrate_trend_dept)
     
     dept_data <- nitrate_trend_dept %>% 
       filter(libelle_departement == input$department)
     
-    ggplot(dept_data, aes(x = annee, y = mean_concentration)) +
+    plotD <- ggplot(dept_data, aes(x = annee, y = mean_concentration)) +
                geom_line(color = 'royalblue4', size=2) +
                geom_point(color = "blue", size=2) +
                labs(title = paste("Evolution de la Concentration en nitrate en", input$department),
                     x = "Year",
-                    y = "Average Nitrate Concentration (mg/L)") +
-               theme_linedraw()
+                    y = "Average Nitrate Concentration (mg/L)", cex=2) +
+               theme_linedraw()+
+      theme(plot.title = element_text(size = 16),
+            axis.title.x = element_text(size = 14),
+            axis.title.y = element_text(size = 14))
+    ggplotly(plotD)
   })
-  # Graphe n°1  page 1: Évolution des Concentrations de Nitrates
+  
   dataMir <- reactive({
  
     
@@ -237,16 +241,16 @@ server <- function(input, output, session) {
   })
   
   # Créer le graphique
-  output$nitratePlot3 <- renderPlot({
+  output$nitratePlot3 <- renderPlotly({
     req(dataMir())
     ggplot(dataMir(), aes(x = annee)) +
-      geom_line(aes(y = concentration_moyenne, color = "Concentration Moyenne")) +
-      geom_line(aes(y = concentration_minimale, color = "Concentration Minimale")) +
-      geom_line(aes(y = concentration_maximale, color = "Concentration Maximale")) +
+      geom_line(aes(y = concentration_moyenne, color = "Concentration Moyenne"), linewidth=1) +
+      geom_line(aes(y = concentration_minimale, color = "Concentration Minimale"), linewidth=1) +
+      geom_line(aes(y = concentration_maximale, color = "Concentration Maximale"), linewidth=1) +
       labs(
         title = paste("Évolution des Concentrations de Nitrates en", input$region),
         x = "Année",
-        y = "Concentration de Nitrates (mg/L)"
+        y = "Concentration de Nitrates (mg/L)", linewidth=1
       ) +
       scale_color_manual(
         values = c("Concentration Moyenne" = "blue", 
