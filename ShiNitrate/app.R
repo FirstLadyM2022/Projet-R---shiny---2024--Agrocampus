@@ -42,7 +42,12 @@ nitrate_trend_dept <- data_gr %>%
   summarise(mean_concentration = mean(concentration_moy))
 # Définir l'interface utilisateur (UI)
 ui <- fluidPage(theme = shinytheme("cerulean"),
-  titlePanel(h1("ShinyTrate Project")), 
+  titlePanel(h1("ShinyTrate Project")),
+                 wellPanel(h3("Description"),
+                p("La présence excessive de nitrates et de nitrites dans l'eau peut avoir des effets néfastes sur la santé humaine et la vie aquatique. Des niveaux élevés de nitrates dans l'eau potable ont été associés à divers problèmes de santé, notamment le cancer, le syndrome du bébé bleu et la méthémoglobinémie chez les nourrissons. De plus, la pollution par les nitrates dans les eaux de surface et les eaux souterraines peut favoriser la prolifération d'algues nuisibles, entraînant une réduction des niveaux d'oxygène dans l'eau, la mort des poissons et des dommages aux écosystèmes aquatiques."),
+                        br(),
+                        p("Cette application Shiny permet de visualiser la qualité des cours d'eau en Bretagne en fonction des concentrations de nitrates, avec des filtres par région, département et année. Les utilisateurs peuvent visualiser l'évolution de la concentration moyenne de nitrates ou la valeur Q90 au fil des ans, à l'aide d'une carte interactive colorée. Cet outil offre une analyse précise pour les gestionnaires environnementaux et les décideurs, facilitant la surveillance des cours d'eau et l'identification des tendances de pollution à long terme.")
+                        ),
   navbarPage("Application Interactive des Séries Temporelles",
              
              # Page 1 - Évolution de la concentration en nitrates
