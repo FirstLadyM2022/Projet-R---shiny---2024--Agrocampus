@@ -307,7 +307,8 @@ server <- function(input, output, session) {
       geom_smooth(method = "lm", color = "red") +
       labs(title = paste("Relation entre", input$variable_x, "et", input$variable_y),
            x = input$variable_x, y = input$variable_y) +
-      theme_minimal()
+      theme_minimal() +
+      coord_flip()  # Inverse les axes X et Y
   })
   
   
